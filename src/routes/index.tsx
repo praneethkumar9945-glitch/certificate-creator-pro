@@ -259,14 +259,20 @@ function BlankFill({
         left,
         bottom,
         width,
-          textAlign: "center",
-          fontSize: "1.25cqw",
-          fontWeight: 600,
-          color: "#e85a1a",
-        }}
-      >
-        {organizer || "—"}
-      </div>
+        textAlign: "center",
+        fontSize: "1.15cqw",
+        fontWeight: 700,
+        color: "#e85a1a",
+        background: "#ffffff",
+        lineHeight: 1.1,
+        paddingBottom: "0.1cqw",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      }}
+    >
+      {children}
     </div>
   );
-});
+}
+

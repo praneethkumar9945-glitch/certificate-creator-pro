@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { forwardRef, useRef, useState, type ChangeEvent, type Ref } from "react";
+import { forwardRef, useRef, useState, type ChangeEvent, type ReactNode, type Ref } from "react";
 import html2canvas from "html2canvas";
 import templateAsset from "@/assets/certificate-template.png.asset.json";
 import { Button } from "@/components/ui/button";

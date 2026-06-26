@@ -5,7 +5,13 @@ import templateAsset from "@/assets/certificate-template.png.asset.json";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,13 +27,28 @@ export const Route = createFileRoute("/")({
   component: CertificateGenerator,
 });
 
+const PLACES = ["1st Place", "2nd Place", "3rd Place"] as const;
+const EVENTS = [
+  "100 Meter",
+  "200 Meter",
+  "400 Meter",
+  "800 Meter",
+  "Relay 400 Meter",
+  "Tug of War",
+  "Badminton Tournament",
+  "Volleyball Tournament",
+  "Kabaddi Tournament",
+  "Shot Put",
+  "Long Jump",
+  "Discus Throw",
+  "Chess",
+] as const;
+
 function CertificateGenerator() {
   const [name, setName] = useState("Participant Name");
-  const [place, setPlace] = useState("1st Place");
-  const [event, setEvent] = useState("Badminton Tournament");
-  const [date, setDate] = useState("6th May 2026");
-  const [venue, setVenue] = useState("US Mallya Indoor Stadium, Mangaluru");
-  const [organizer, setOrganizer] = useState("MICS");
+  const [place, setPlace] = useState<string>(PLACES[0]);
+  const [event, setEvent] = useState<string>(EVENTS[0]);
+  const [organizer, setOrganizer] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const certRef = useRef<HTMLDivElement>(null);
@@ -77,30 +98,34 @@ function CertificateGenerator() {
               <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="place">Place / Position</Label>
-              <Input
-                id="place"
-                value={place}
-                onChange={(e) => setPlace(e.target.value)}
-                placeholder="1st Place"
-              />
+              <Label>Place / Position</Label>
+              <Select value={place} onValueChange={setPlace}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PLACES.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {p}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="event">Event</Label>
-              <Input id="event" value={event} onChange={(e) => setEvent(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
-              <Input id="date" value={date} onChange={(e) => setDate(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="venue">Venue</Label>
-              <Textarea
-                id="venue"
-                rows={2}
-                value={venue}
-                onChange={(e) => setVenue(e.target.value)}
-              />
+              <Label>Event</Label>
+              <Select value={event} onValueChange={setEvent}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {EVENTS.map((ev) => (
+                    <SelectItem key={ev} value={ev}>
+                      {ev}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="organizer">Organized by</Label>
@@ -108,6 +133,7 @@ function CertificateGenerator() {
                 id="organizer"
                 value={organizer}
                 onChange={(e) => setOrganizer(e.target.value)}
+                placeholder="(given later)"
               />
             </div>
             <div className="space-y-2">
@@ -129,8 +155,6 @@ function CertificateGenerator() {
                 name={name}
                 place={place}
                 event={event}
-                date={date}
-                venue={venue}
                 organizer={organizer}
                 photo={photo}
               />
@@ -146,14 +170,12 @@ type PreviewProps = {
   name: string;
   place: string;
   event: string;
-  date: string;
-  venue: string;
   organizer: string;
   photo: string | null;
 };
 
 const CertificatePreview = forwardRef(function CertificatePreview(
-  { name, place, event, date, venue, organizer, photo }: PreviewProps,
+  { name, place, event, organizer, photo }: PreviewProps,
   ref: Ref<HTMLDivElement>,
 ) {
   return (
@@ -170,58 +192,84 @@ const CertificatePreview = forwardRef(function CertificatePreview(
         color: "#0b1437",
       }}
     >
-      {/* Participant photo */}
-      <div
-        style={{
-          position: "absolute",
-          left: "8.3%",
-          top: "46.5%",
-          width: "14.5%",
-          height: "29%",
-          background: photo
-            ? `center/cover no-repeat url(${photo})`
-            : "#111",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-        }}
-      />
+      {/* Participant photo — fits inside the polaroid frame */}
+      {photo && (
+        <div
+          style={{
+            position: "absolute",
+            left: "12.2%",
+            top: "46.5%",
+            width: "12.2%",
+            height: "21.5%",
+            background: `center/cover no-repeat url(${photo})`,
+          }}
+        />
+      )}
 
-      {/* Name */}
+      {/* Name on the underline */}
       <div
         style={{
           position: "absolute",
-          left: "29%",
-          top: "51.5%",
-          width: "63%",
+          left: "30%",
+          top: "53.5%",
+          width: "55%",
           textAlign: "center",
           fontFamily: "Cinzel, serif",
           fontWeight: 700,
-          fontSize: "2.2cqw",
+          fontSize: "1.9cqw",
           color: "#0b1437",
-          lineHeight: 1.1,
+          lineHeight: 1,
         }}
       >
         {name}
       </div>
 
-      {/* Description */}
+      {/* Place — fills blank 1 (line 1, right side) */}
       <div
         style={{
           position: "absolute",
-          left: "29%",
-          top: "60%",
-          width: "63%",
+          left: "70.5%",
+          top: "61.4%",
+          width: "22%",
+          textAlign: "center",
           fontSize: "1.25cqw",
-          lineHeight: 1.55,
-          color: "#1a1a1a",
-          textAlign: "justify",
+          fontWeight: 600,
+          color: "#e85a1a",
         }}
       >
-        This is to proudly certify that the above named participant has achieved{" "}
-        <strong style={{ color: "#e85a1a" }}>{place}</strong> in the{" "}
-        <strong style={{ color: "#e85a1a" }}>{event}</strong>, held on {date} at {venue}
-        {organizer ? `, organized by ${organizer}` : ""}. This certificate is awarded in
-        recognition of outstanding skill, dedication, and sportsmanship demonstrated throughout
-        the competition.
+        {place}
+      </div>
+
+      {/* Event — fills blank 2 (line 2, left) */}
+      <div
+        style={{
+          position: "absolute",
+          left: "28%",
+          top: "65.6%",
+          width: "23%",
+          textAlign: "center",
+          fontSize: "1.25cqw",
+          fontWeight: 600,
+          color: "#e85a1a",
+        }}
+      >
+        {event}
+      </div>
+
+      {/* Organizer — fills blank 3 (line 3, left) */}
+      <div
+        style={{
+          position: "absolute",
+          left: "28%",
+          top: "69.8%",
+          width: "23%",
+          textAlign: "center",
+          fontSize: "1.25cqw",
+          fontWeight: 600,
+          color: "#e85a1a",
+        }}
+      >
+        {organizer || "—"}
       </div>
     </div>
   );

@@ -192,16 +192,19 @@ const CertificatePreview = forwardRef(function CertificatePreview(
         color: "#0b1437",
       }}
     >
-      {/* Participant photo — fits inside the polaroid frame */}
+      {/* Participant photo — fits exactly inside the black polaroid box */}
       {photo && (
-        <div
+        <img
+          src={photo}
+          alt=""
           style={{
             position: "absolute",
-            left: "12.2%",
-            top: "46.5%",
-            width: "12.2%",
-            height: "21.5%",
-            background: `center/cover no-repeat url(${photo})`,
+            left: "8.15%",
+            top: "46.67%",
+            width: "12.15%",
+            height: "22.77%",
+            objectFit: "cover",
+            display: "block",
           }}
         />
       )}
@@ -210,59 +213,52 @@ const CertificatePreview = forwardRef(function CertificatePreview(
       <div
         style={{
           position: "absolute",
-          left: "30%",
-          top: "53.5%",
-          width: "55%",
+          left: "34.7%",
+          bottom: "44.06%",
+          width: "32.55%",
           textAlign: "center",
           fontFamily: "Cinzel, serif",
           fontWeight: 700,
-          fontSize: "1.9cqw",
+          fontSize: "1.7cqw",
           color: "#0b1437",
           lineHeight: 1,
+          background: "#ffffff",
+          paddingBottom: "0.15cqw",
         }}
       >
         {name}
       </div>
 
-      {/* Place — fills blank 1 (line 1, right side) */}
-      <div
-        style={{
-          position: "absolute",
-          left: "70.5%",
-          top: "61.4%",
-          width: "22%",
-          textAlign: "center",
-          fontSize: "1.25cqw",
-          fontWeight: 600,
-          color: "#e85a1a",
-        }}
-      >
-        {place}
-      </div>
+      {/* Place — blank 1 (line 1, right) */}
+      <BlankFill left="72.4%" width="15.25%" bottom="38.68%">{place}</BlankFill>
 
-      {/* Event — fills blank 2 (line 2, left) */}
-      <div
-        style={{
-          position: "absolute",
-          left: "28%",
-          top: "65.6%",
-          width: "23%",
-          textAlign: "center",
-          fontSize: "1.25cqw",
-          fontWeight: 600,
-          color: "#e85a1a",
-        }}
-      >
-        {event}
-      </div>
+      {/* Event — blank 2 (line 2, left) */}
+      <BlankFill left="22.85%" width="15.25%" bottom="36.07%">{event}</BlankFill>
 
-      {/* Organizer — fills blank 3 (line 3, left) */}
-      <div
-        style={{
-          position: "absolute",
-          left: "28%",
-          top: "69.8%",
-          width: "23%",
+      {/* Organizer — blank 3 (line 3, left) */}
+      <BlankFill left="22.85%" width="15.25%" bottom="33.38%">{organizer}</BlankFill>
+    </div>
+  );
+});
+
+function BlankFill({
+  left,
+  width,
+  bottom,
+  children,
+}: {
+  left: string;
+  width: string;
+  bottom: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left,
+        bottom,
+        width,
           textAlign: "center",
           fontSize: "1.25cqw",
           fontWeight: 600,

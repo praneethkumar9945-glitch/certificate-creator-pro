@@ -250,7 +250,7 @@ function BlankFill({
   left: string;
   width: string;
   bottom: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div

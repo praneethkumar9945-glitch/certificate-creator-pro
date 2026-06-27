@@ -144,6 +144,15 @@ function CertificateGenerator() {
               </Select>
             </div>
             <div className="space-y-2">
+              <Label htmlFor="college">College Name</Label>
+              <Input
+                id="college"
+                value={college}
+                onChange={(e) => setCollege(e.target.value)}
+                placeholder="e.g. St. Aloysius College"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="photo">Participant Photo</Label>
               <Input id="photo" type="file" accept="image/*" onChange={onPhoto} />
             </div>
@@ -159,6 +168,7 @@ function CertificateGenerator() {
                 name={name}
                 place={place}
                 event={event}
+                college={college}
                 photo={photo}
               />
             </div>

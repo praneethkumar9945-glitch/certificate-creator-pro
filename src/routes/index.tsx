@@ -1,5 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { forwardRef, useRef, useState, type ChangeEvent, type ReactNode, type Ref } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type ReactNode,
+} from "react";
 import html2canvas from "html2canvas";
 import templateAsset from "@/assets/certificate-template.png.asset.json";
 import { Button } from "@/components/ui/button";
@@ -48,7 +56,6 @@ function CertificateGenerator() {
   const [name, setName] = useState("Participant Name");
   const [place, setPlace] = useState<string>(PLACES[0]);
   const [event, setEvent] = useState<string>(EVENTS[0]);
-  const [organizer, setOrganizer] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const certRef = useRef<HTMLDivElement>(null);
@@ -62,18 +69,26 @@ function CertificateGenerator() {
   }
 
   async function download() {
-    if (!certRef.current) return;
+    const node = certRef.current;
+    if (!node) return;
     setDownloading(true);
     try {
-      const canvas = await html2canvas(certRef.current, {
+      // Render at fixed native-resolution width for crisp output.
+      const canvas = await html2canvas(node, {
         backgroundColor: "#ffffff",
-        scale: 2,
         useCORS: true,
+        allowTaint: false,
+        width: node.offsetWidth,
+        height: node.offsetHeight,
+        scale: 2000 / node.offsetWidth,
       });
       const link = document.createElement("a");
-      link.download = `${name.replace(/\s+/g, "_") || "certificate"}.png`;
+      link.download = `${(name || "certificate").replace(/\s+/g, "_")}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
+    } catch (err) {
+      console.error("Certificate download failed", err);
+      alert("Failed to generate certificate. Please try again.");
     } finally {
       setDownloading(false);
     }
@@ -128,15 +143,6 @@ function CertificateGenerator() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="organizer">Organized by</Label>
-              <Input
-                id="organizer"
-                value={organizer}
-                onChange={(e) => setOrganizer(e.target.value)}
-                placeholder="(given later)"
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="photo">Participant Photo</Label>
               <Input id="photo" type="file" accept="image/*" onChange={onPhoto} />
             </div>
@@ -146,16 +152,12 @@ function CertificateGenerator() {
           </aside>
 
           <div className="overflow-auto rounded-xl border bg-card p-4 shadow-sm">
-            <div
-              className="mx-auto"
-              style={{ maxWidth: 1100, containerType: "inline-size" }}
-            >
+            <div className="mx-auto" style={{ maxWidth: 1100 }}>
               <CertificatePreview
                 ref={certRef}
                 name={name}
                 place={place}
                 event={event}
-                organizer={organizer}
                 photo={photo}
               />
             </div>
@@ -170,86 +172,109 @@ type PreviewProps = {
   name: string;
   place: string;
   event: string;
-  organizer: string;
   photo: string | null;
 };
 
-const CertificatePreview = forwardRef(function CertificatePreview(
-  { name, place, event, organizer, photo }: PreviewProps,
-  ref: Ref<HTMLDivElement>,
-) {
-  return (
-    <div
-      ref={ref}
-      style={{
-        position: "relative",
-        width: "100%",
-        aspectRatio: "2000 / 1414",
-        backgroundImage: `url(${templateAsset.url})`,
-        backgroundSize: "100% 100%",
-        backgroundRepeat: "no-repeat",
-        fontFamily: "Poppins, sans-serif",
-        color: "#0b1437",
-      }}
-    >
-      {/* Participant photo — fits exactly inside the black polaroid box */}
-      {photo && (
-        <img
-          src={photo}
-          alt=""
-          style={{
-            position: "absolute",
-            left: "8.15%",
-            top: "46.67%",
-            width: "12.15%",
-            height: "22.77%",
-            objectFit: "cover",
-            display: "block",
-          }}
-        />
-      )}
+const CertificatePreview = forwardRef<HTMLDivElement, PreviewProps>(
+  function CertificatePreview({ name, place, event, photo }, ref) {
+    const innerRef = useRef<HTMLDivElement>(null);
+    useImperativeHandle(ref, () => innerRef.current as HTMLDivElement);
 
-      {/* Name on the underline */}
+    // Drive sizing in px from the rendered width so html2canvas (no container-query
+    // support) renders fonts and positions at the right scale.
+    const [unit, setUnit] = useState(0);
+    useEffect(() => {
+      const el = innerRef.current;
+      if (!el) return;
+      const update = () => setUnit(el.offsetWidth / 100); // 1 "u" = 1% of width
+      update();
+      const ro = new ResizeObserver(update);
+      ro.observe(el);
+      return () => ro.disconnect();
+    }, []);
+
+    const u = (v: number) => `${v * unit}px`;
+
+    return (
       <div
+        ref={innerRef}
         style={{
-          position: "absolute",
-          left: "34.7%",
-          bottom: "44.06%",
-          width: "32.55%",
-          textAlign: "center",
-          fontFamily: "Cinzel, serif",
-          fontWeight: 700,
-          fontSize: "1.7cqw",
+          position: "relative",
+          width: "100%",
+          aspectRatio: "2000 / 1414",
+          backgroundImage: `url(${templateAsset.url})`,
+          backgroundSize: "100% 100%",
+          backgroundRepeat: "no-repeat",
+          fontFamily: "Poppins, sans-serif",
           color: "#0b1437",
-          lineHeight: 1,
-          background: "#ffffff",
-          paddingBottom: "0.15cqw",
         }}
       >
-        {name}
+        {/* Participant photo — fills the black polaroid box */}
+        {photo && (
+          <img
+            src={photo}
+            alt=""
+            crossOrigin="anonymous"
+            style={{
+              position: "absolute",
+              left: "8.15%",
+              top: "46.68%",
+              width: "16.80%",
+              height: "22.84%",
+              objectFit: "cover",
+              display: "block",
+            }}
+          />
+        )}
+
+        {/* Name — sits on the long underline */}
+        <div
+          style={{
+            position: "absolute",
+            left: "35.0%",
+            top: `calc(55.94% - ${u(2.2)})`,
+            width: "32.25%",
+            height: u(2.2),
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            fontFamily: "Cinzel, serif",
+            fontWeight: 700,
+            fontSize: u(1.7),
+            lineHeight: 1,
+            color: "#0b1437",
+            background: "#ffffff",
+            paddingBottom: u(0.15),
+          }}
+        >
+          {name}
+        </div>
+
+        {/* Place — blank on line 1 (right) */}
+        <BlankFill left="72.35%" width="15.30%" bottom="40.88%" u={u}>
+          {place}
+        </BlankFill>
+
+        {/* Event — blank on line 2 (left, indented) */}
+        <BlankFill left="25.00%" width="13.10%" bottom="38.19%" u={u}>
+          {event}
+        </BlankFill>
       </div>
-
-      {/* Place — blank 1 (line 1, right) */}
-      <BlankFill left="72.4%" width="15.25%" bottom="38.68%">{place}</BlankFill>
-
-      {/* Event — blank 2 (line 2, left) */}
-      <BlankFill left="22.85%" width="15.25%" bottom="36.07%">{event}</BlankFill>
-
-      {/* Organizer — blank 3 (line 3, left) */}
-      <BlankFill left="22.85%" width="15.25%" bottom="33.38%">{organizer}</BlankFill>
-    </div>
-  );
-});
+    );
+  },
+);
 
 function BlankFill({
   left,
   width,
   bottom,
+  u,
   children,
 }: {
   left: string;
   width: string;
   bottom: string;
+  u: (v: number) => string;
   children: ReactNode;
 }) {
   return (
@@ -259,20 +284,21 @@ function BlankFill({
         left,
         bottom,
         width,
-        textAlign: "center",
-        fontSize: "1.15cqw",
+        height: u(1.6),
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "center",
+        fontSize: u(1.15),
         fontWeight: 700,
         color: "#e85a1a",
         background: "#ffffff",
-        lineHeight: 1.1,
-        paddingBottom: "0.1cqw",
+        lineHeight: 1,
+        paddingBottom: u(0.1),
         whiteSpace: "nowrap",
         overflow: "hidden",
-        textOverflow: "ellipsis",
       }}
     >
       {children}
     </div>
   );
 }
-

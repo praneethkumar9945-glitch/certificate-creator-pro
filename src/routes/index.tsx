@@ -221,7 +221,7 @@ const CertificatePreview = forwardRef<HTMLDivElement, PreviewProps>(
           color: "#0b1437",
         }}
       >
-        {/* Participant photo — fills the black polaroid box */}
+        {/* Participant photo — fits inside the black polaroid box */}
         {photo && (
           <img
             src={photo}
@@ -233,11 +233,17 @@ const CertificatePreview = forwardRef<HTMLDivElement, PreviewProps>(
               top: "46.68%",
               width: "16.80%",
               height: "22.84%",
-              objectFit: "cover",
+              objectFit: "contain",
+              background: "#000",
               display: "block",
             }}
           />
         )}
+
+        {/* College name — on the underline beneath the polaroid */}
+        <BlankFill left="17.20%" width="13.70%" bottom="18.81%" u={u} fontSize={0.95}>
+          {college}
+        </BlankFill>
 
         {/* Name — sits on the long underline */}
         <div

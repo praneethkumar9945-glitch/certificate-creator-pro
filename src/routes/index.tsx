@@ -56,6 +56,7 @@ function CertificateGenerator() {
   const [name, setName] = useState("Participant Name");
   const [place, setPlace] = useState<string>(PLACES[0]);
   const [event, setEvent] = useState<string>(EVENTS[0]);
+  const [college, setCollege] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const certRef = useRef<HTMLDivElement>(null);

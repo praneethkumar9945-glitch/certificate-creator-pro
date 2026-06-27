@@ -56,6 +56,7 @@ function CertificateGenerator() {
   const [name, setName] = useState("Participant Name");
   const [place, setPlace] = useState<string>(PLACES[0]);
   const [event, setEvent] = useState<string>(EVENTS[0]);
+  const [college, setCollege] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const certRef = useRef<HTMLDivElement>(null);
@@ -143,6 +144,15 @@ function CertificateGenerator() {
               </Select>
             </div>
             <div className="space-y-2">
+              <Label htmlFor="college">College Name</Label>
+              <Input
+                id="college"
+                value={college}
+                onChange={(e) => setCollege(e.target.value)}
+                placeholder="e.g. St. Aloysius College"
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="photo">Participant Photo</Label>
               <Input id="photo" type="file" accept="image/*" onChange={onPhoto} />
             </div>
@@ -158,6 +168,7 @@ function CertificateGenerator() {
                 name={name}
                 place={place}
                 event={event}
+                college={college}
                 photo={photo}
               />
             </div>
@@ -172,11 +183,12 @@ type PreviewProps = {
   name: string;
   place: string;
   event: string;
+  college: string;
   photo: string | null;
 };
 
 const CertificatePreview = forwardRef<HTMLDivElement, PreviewProps>(
-  function CertificatePreview({ name, place, event, photo }, ref) {
+  function CertificatePreview({ name, place, event, college, photo }, ref) {
     const innerRef = useRef<HTMLDivElement>(null);
     useImperativeHandle(ref, () => innerRef.current as HTMLDivElement);
 
@@ -209,7 +221,7 @@ const CertificatePreview = forwardRef<HTMLDivElement, PreviewProps>(
           color: "#0b1437",
         }}
       >
-        {/* Participant photo — fills the black polaroid box */}
+        {/* Participant photo — fits inside the black polaroid box */}
         {photo && (
           <img
             src={photo}
@@ -221,11 +233,17 @@ const CertificatePreview = forwardRef<HTMLDivElement, PreviewProps>(
               top: "46.68%",
               width: "16.80%",
               height: "22.84%",
-              objectFit: "cover",
+              objectFit: "contain",
+              background: "#000",
               display: "block",
             }}
           />
         )}
+
+        {/* College name — on the underline beneath the polaroid */}
+        <BlankFill left="17.20%" width="13.70%" bottom="18.81%" u={u} fontSize={0.95}>
+          {college}
+        </BlankFill>
 
         {/* Name — sits on the long underline */}
         <div
@@ -269,12 +287,14 @@ function BlankFill({
   width,
   bottom,
   u,
+  fontSize = 1.15,
   children,
 }: {
   left: string;
   width: string;
   bottom: string;
   u: (v: number) => string;
+  fontSize?: number;
   children: ReactNode;
 }) {
   return (
@@ -284,11 +304,11 @@ function BlankFill({
         left,
         bottom,
         width,
-        height: u(1.6),
+        height: u(fontSize + 0.4),
         display: "flex",
         alignItems: "flex-end",
         justifyContent: "center",
-        fontSize: u(1.15),
+        fontSize: u(fontSize),
         fontWeight: 700,
         color: "#e85a1a",
         background: "#ffffff",

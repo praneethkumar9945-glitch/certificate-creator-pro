@@ -287,12 +287,14 @@ function BlankFill({
   width,
   bottom,
   u,
+  fontSize = 1.15,
   children,
 }: {
   left: string;
   width: string;
   bottom: string;
   u: (v: number) => string;
+  fontSize?: number;
   children: ReactNode;
 }) {
   return (
@@ -302,11 +304,11 @@ function BlankFill({
         left,
         bottom,
         width,
-        height: u(1.6),
+        height: u(fontSize + 0.4),
         display: "flex",
         alignItems: "flex-end",
         justifyContent: "center",
-        fontSize: u(1.15),
+        fontSize: u(fontSize),
         fontWeight: 700,
         color: "#e85a1a",
         background: "#ffffff",

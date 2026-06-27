@@ -183,11 +183,12 @@ type PreviewProps = {
   name: string;
   place: string;
   event: string;
+  college: string;
   photo: string | null;
 };
 
 const CertificatePreview = forwardRef<HTMLDivElement, PreviewProps>(
-  function CertificatePreview({ name, place, event, photo }, ref) {
+  function CertificatePreview({ name, place, event, college, photo }, ref) {
     const innerRef = useRef<HTMLDivElement>(null);
     useImperativeHandle(ref, () => innerRef.current as HTMLDivElement);
 
